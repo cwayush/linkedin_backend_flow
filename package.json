@@ -1,0 +1,18 @@
+{
+  "name": "linkedin-clone-monorepo",
+  "version": "1.0.0",
+  "workspaces": [
+    "api-gateway",
+    "services/*",
+    "shared"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "build:all": "npm run build --workspaces --if-present",
+    "dev:all": "concurrently \"npm start -w api-gateway\" \"npm start -w auth-service\" \"npm start -w user-service\" \"npm start -w post-service\" \"npm start -w company-job-service\" \"npm start -w chat-service\" \"npm start -w file-service\""
+  },
+  "dependencies": {
+    "@prisma/client": "^7.5.0",
+    "concurrently": "^8.2.2"
+  }
+}

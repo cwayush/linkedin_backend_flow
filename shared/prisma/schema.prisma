@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------- USER SERVICE ----------------
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  createdAt DateTime @default(now())
+
+  userInfo         UserInfo?
+  experiences      Experience[]
+  posts            Post[]
+  postComments     PostComment[]
+  postLikes        PostLike[]
+  files            UserFile[]
+  friends          User[]  @relation("UserFriends")
+  friendOf         User[]  @relation("UserFriends")
+  roles            Role[]
+  chats            ChatParticipant[]
+  messages         Message[]
+  jobApplications  Application[]
+}
+
+model UserInfo {
+  id                  Int      @id @default(autoincrement())
+  userId              Int      @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address             String?
+  zipCode             String?
+  city                String
+  country             String
+  website             String?
+  professionalSummary String?
+  headLine            String?
+  dob                 DateTime
+}
+
+model Experience {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  company     String
+  location    String?
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users User[]
+}
+
+// ---------------- POST SERVICE ----------------
+model Post {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String   
+  description String   @db.Text
+  postedAt    DateTime @default(now())
+
+  comments    PostComment[]
+  likes       PostLike[]
+  files       PostFile[]
+}
+
+model PostComment {
+  id       Int      @id @default(autoincrement())
+  postId   Int
+  post     Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId   Int
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId Int?
+  parent   PostComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  PostComment[] @relation("CommentReplies")
+  text     String   @db.Text
+  postedAt DateTime @default(now())
+}
+
+model PostLike {
+  id     Int  @id @default(autoincrement())
+  postId Int
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([postId, userId])
+}
+
+// ---------------- FILE SERVICE ----------------
+model PostFile {
+  id       Int    @id @default(autoincrement())
+  postId   Int
+  post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  fileUrl  String
+  type     String // IMAGE, VIDEO, PDF
+}
+
+model UserFile {
+  id       Int    @id @default(autoincrement())
+  userId   Int
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileUrl  String
+  type     String // AVATAR, COVER, RESUME
+}
+
+// ---------------- COMPANY & JOB SERVICE ----------------
+model Company {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?  @db.Text
+  logoUrl     String?
+  bannerUrl   String?
+  createdAt   DateTime @default(now())
+  
+  locations   CompanyLocation[]
+  jobs        Job[]
+}
+
+model CompanyLocation {
+  id        Int     @id @default(autoincrement())
+  companyId Int
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  address   String
+  city      String
+  country   String
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  jobs Job[]
+}
+
+model Job {
+  id          Int      @id @default(autoincrement())
+  companyId   Int
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  categoryId  Int
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  title       String
+  description String   @db.Text
+  location    String
+  salary      String?
+  postedAt    DateTime @default(now())
+  
+  applications Application[]
+}
+
+model Application {
+  id        Int      @id @default(autoincrement())
+  jobId     Int
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resumeUrl String
+  status    String   @default("PENDING") 
+  appliedAt DateTime @default(now())
+}
+
+// ---------------- CHAT SERVICE ----------------
+model Chat {
+  id           Int       @id @default(autoincrement())
+  createdAt    DateTime  @default(now())
+  
+  participants ChatParticipant[]
+  messages     Message[]
+}
+
+model ChatParticipant {
+  id     Int  @id @default(autoincrement())
+  chatId Int
+  chat   Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([chatId, userId])
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  chatId    Int
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  senderId  Int
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  text      String   @db.Text
+  sentAt    DateTime @default(now())
+}

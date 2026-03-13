@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:alpine
+    ports:
+      - '6379:6379'
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    depends_on:
+      - auth-service
+      - user-service
+      - post-service
+      - company-job-service
+      - chat-service
+      - file-service
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    ports:
+      - '8081:8081'
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=supersecret
+
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    ports:
+      - '8082:8082'
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=supersecret
+
+  post-service:
+    build:
+      context: ./services/post-service
+      dockerfile: Dockerfile
+    ports:
+      - '8083:8083'
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=supersecret
+
+  company-job-service:
+    build:
+      context: ./services/company-job-service
+      dockerfile: Dockerfile
+    ports:
+      - '8084:8084'
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=supersecret
+
+  chat-service:
+    build:
+      context: ./services/chat-service
+      dockerfile: Dockerfile
+    ports:
+      - '8085:8085'
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=supersecret
+    depends_on:
+      - redis
+
+  file-service:
+    build:
+      context: ./services/file-service
+      dockerfile: Dockerfile
+    ports:
+      - '8086:8086'
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=supersecret

@@ -1,4 +1,6 @@
-# LinkedIn Clone - Microservices Node.js Backend
+<h1 align="center">
+ LinkedIn-Inspired Distributed Microservices Backend
+</h1>
 
 <div align="center">
   <img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="NodeJS" />
